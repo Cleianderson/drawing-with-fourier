@@ -12,9 +12,9 @@ class Circle:
     def update(self, unit_angle=0.02):
         self.angle += unit_angle
 
-    def draw(self, center={"x": 0, "y": 0}, color=WHITE, is_last=False):
-        x = self.radius * cos(self.angle) + center.get("x")
-        y = self.radius * sin(self.angle) + center.get("y")
+    def draw(self, center={"x": 0, "y": 0}, is_last=False, angle=1):
+        x = self.radius * cos(angle * self.angle) + center.get("x")
+        y = self.radius * sin(angle * self.angle) + center.get("y")
 
         color = WHITE if is_last else arc.make_transparent_color(WHITE, 50)
         point_size = 5 if is_last else 2
