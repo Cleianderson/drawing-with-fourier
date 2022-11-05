@@ -1,5 +1,5 @@
 import arcade as arc
-from arcade.color import WHITE, YELLOW
+from arcade.color import WHITE, YELLOW, GREEN
 from numpy import cos, sin
 
 
@@ -31,12 +31,16 @@ class Circle:
             while len(self.trace) > 300:
                 self.trace.pop(0)
 
-            trace = []
+            trace_y = []
+            trace_x = []
             for index, point in enumerate(self.trace[::-1]):
-                trace.append((600 - (self.radius + index), point.get("y")))
+                trace_y.append((600 - (self.radius + index), point.get("y")))
+                trace_x.append((point.get("x"), 300 - (self.radius + index)))
 
-            arc.draw_line_strip(trace[::-1], WHITE)
+            arc.draw_line_strip(trace_y[::-1], WHITE)
+            arc.draw_line_strip(trace_x[::-1], WHITE)
 
-            arc.draw_line(trace[0][0], trace[0][1], x, y, YELLOW)
+            arc.draw_line(trace_y[0][0], trace_y[0][1], x, y, YELLOW)
+            arc.draw_line(trace_x[0][0], trace_x[0][1], x, y, GREEN)
 
         return x, y
