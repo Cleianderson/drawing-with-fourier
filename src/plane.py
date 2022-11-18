@@ -6,19 +6,39 @@ from circle import Circle
 
 
 class Plane(arc.Window):
-    def __init__(self, width: int = 600, height: int = 600):
+    def __init__(
+        self,
+        width: int = 600,
+        height: int = 600,
+        period: float = 1,
+        num_circs: int = 1,
+        center=None,
+    ):
         super().__init__(width, height, "Fourier")
         # self.set_update_rate(1 / 30)
 
-        self.center = {"x": width / 2, "y": height / 2}
+        self.center = center if center != None else {"x": width / 2, "y": height / 2}
 
-        self.period = 1
-        num_circs = 50
-        self.circles = []
+        self.period = period
+        self.num_circs = num_circs
+        self.create_circles(num_circs)
+
+    def create_circles(self, num_circs: int = 1):
+        _circles = []
         for i in range(num_circs):
-            n = i + 1
-            cn = 100 * ((4 * self.period**2 * (-1) ** n) / (n * PI) ** 2)
-            self.circles.append(Circle(0, cn))
+            n = 2 * i + 1
+            cn = 50 * (4 / (n * PI))
+            _circles.append(Circle(0, cn))
+        self.circles = _circles
+
+    def on_key_press(self, key, modifiers):
+
+        if key == arc.key.RIGHT:
+            self.num_circs += 1
+        elif key == arc.key.LEFT and self.num_circs > 0:
+            self.num_circs -= 1
+
+        self.create_circles(self.num_circs)
 
     def on_update(self, delta_time=10**3):
         super().on_update(delta_time)
@@ -33,6 +53,6 @@ class Plane(arc.Window):
 
         arc.start_render()
         for i, circle in enumerate(self.circles):
-            angle = (i + 1) * PI
+            angle = 2 * i + 1
             is_last = i + 1 == len(self.circles)
             x, y = circle.draw({"x": x, "y": y}, is_last, angle)
