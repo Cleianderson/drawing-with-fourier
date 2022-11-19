@@ -1,4 +1,5 @@
-from numpy import pi as PI
+from numpy import pi as PI, e, sum, array, sqrt
+from cmath import phase
 import arcade as arc
 
 from circle import Circle
@@ -20,17 +21,21 @@ class Plane(arc.Window):
 
         self.center = center if center != None else {"x": width / 2, "y": height / 2}
 
+        y = [*[-100] * 5, *[100] * 5] * 2
+        fourier_y = self.discrete_fourier_transform(y)
+
         self.period = period
         self.num_circs = num_circs
-        self.create_circles(num_circs)
+        _circles = []
+        for y in fourier_y:
+            self.create_circles(num_circs)
+            _circles.append(Circle(y.get("phase"), y.get("amp")))
+        self.circles = _circles
 
     def create_circles(self, num_circs: int = 1):
-        _circles = []
         for i in range(num_circs):
             n = 2 * i + 1
             cn = 50 * (4 / (n * PI))
-            _circles.append(Circle(0, cn))
-        self.circles = _circles
 
     def on_key_press(self, key, modifiers):
 
@@ -44,7 +49,7 @@ class Plane(arc.Window):
     def on_update(self, delta_time=10**3):
         super().on_update(delta_time)
         for n, circle in enumerate(self.circles):
-            circle.update()
+            circle.update(2 * PI / len(self.circles))
 
     def on_draw(self):
         self.clear()
@@ -57,3 +62,26 @@ class Plane(arc.Window):
             angle = 2 * i + 1
             is_last = i + 1 == len(self.circles)
             x, y = circle.draw({"x": x, "y": y}, is_last, angle, x * 2, y * 2)
+
+    def discrete_fourier_transform(self, arr_x):
+        X = []
+        N = len(arr_x)
+
+        for k in range(N):
+            S = 0
+            for n in range(N):
+                S += arr_x[n] * e ** (-2j * PI * k * n / N)
+
+            re, im = S.real / N, S.imag / N
+
+            X.append(
+                {
+                    "re": re,
+                    "im": im,
+                    "phase": phase(S),
+                    "amp": sqrt(re**2 + im**2),
+                    "freq": k,
+                }
+            )
+
+        return X

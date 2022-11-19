@@ -37,8 +37,8 @@ class Circle:
                 x = point.get("x")
                 y = point.get("y")
 
-                translado_y = width / 2 - (index)
-                translado_x = height / 2 - (index)
+                translado_y = 600 - (self.radius + index)
+                translado_x = 300 - (self.radius + index)
 
                 trace_y.append((translado_y, y))
                 trace_x.append((x, translado_x))
