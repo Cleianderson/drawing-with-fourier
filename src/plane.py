@@ -3,6 +3,8 @@ from cmath import phase
 import arcade as arc
 
 from circle import Circle
+from rabbit import rabbit
+from pi import pi as _pi
 
 
 class Plane(arc.Window):
@@ -21,30 +23,30 @@ class Plane(arc.Window):
 
         self.center = center if center != None else {"x": width / 2, "y": height / 2}
 
-        y = [*[-100] * 5, *[100] * 5] * 2
-        fourier_y = self.discrete_fourier_transform(y)
+        X = []
+
+        path = _pi[::8]
+        scale = 1.5
+
+        for point in path:
+            X.append(point.get("x") / scale + point.get("y") / scale * 1j)
+
+        fourier_y = self.discrete_fourier_transform(X)
 
         self.period = period
         self.num_circs = num_circs
         _circles = []
         for y in fourier_y:
             self.create_circles(num_circs)
-            _circles.append(Circle(y.get("phase"), y.get("amp")))
+            _circles.append(
+                Circle(0, y.get("amp"), y.get("freq"), y.get("phase") + PI / 2)
+            )
         self.circles = _circles
 
     def create_circles(self, num_circs: int = 1):
         for i in range(num_circs):
             n = 2 * i + 1
             cn = 50 * (4 / (n * PI))
-
-    def on_key_press(self, key, modifiers):
-
-        if key == arc.key.RIGHT:
-            self.num_circs += 1
-            self.create_circles(self.num_circs)
-        elif key == arc.key.LEFT and self.num_circs > 0:
-            self.num_circs -= 1
-            self.create_circles(self.num_circs)
 
     def on_update(self, delta_time=10**3):
         super().on_update(delta_time)
@@ -59,7 +61,7 @@ class Plane(arc.Window):
 
         arc.start_render()
         for i, circle in enumerate(self.circles):
-            angle = 2 * i + 1
+            angle = 1
             is_last = i + 1 == len(self.circles)
             x, y = circle.draw({"x": x, "y": y}, is_last, angle, x * 2, y * 2)
 
@@ -73,7 +75,7 @@ class Plane(arc.Window):
                 S += arr_x[n] * e ** (-2j * PI * k * n / N)
 
             re, im = S.real / N, S.imag / N
-
+            S = re + im * 1j
             X.append(
                 {
                     "re": re,
