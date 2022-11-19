@@ -12,7 +12,7 @@ class Circle:
     def update(self, unit_angle=0.02):
         self.angle += unit_angle
 
-    def draw(self, center={"x": 0, "y": 0}, is_last=False, angle=1):
+    def draw(self, center={"x": 0, "y": 0}, is_last=False, angle=1, width=1, height=1):
         x = self.radius * cos(angle * self.angle) + center.get("x")
         y = self.radius * sin(angle * self.angle) + center.get("y")
 
@@ -34,13 +34,19 @@ class Circle:
             trace_y = []
             trace_x = []
             for index, point in enumerate(self.trace[::-1]):
-                trace_y.append((600 - (self.radius + index), point.get("y")))
-                trace_x.append((point.get("x"), 300 - (self.radius + index)))
+                x = point.get("x")
+                y = point.get("y")
+
+                translado_y = width / 2 - (index)
+                translado_x = height / 2 - (index)
+
+                trace_y.append((translado_y, y))
+                trace_x.append((x, translado_x))
 
             arc.draw_line_strip(trace_y[::-1], WHITE)
-            arc.draw_line_strip(trace_x[::-1], WHITE)
+            # arc.draw_line_strip(trace_x[::-1], WHITE)
 
-            arc.draw_line(trace_y[0][0], trace_y[0][1], x, y, YELLOW)
-            arc.draw_line(trace_x[0][0], trace_x[0][1], x, y, GREEN)
+            # arc.draw_line(trace_y[0][0], trace_y[0][1], x, y, YELLOW)
+            # arc.draw_line(trace_x[0][0], trace_x[0][1], x, y, GREEN)
 
         return x, y

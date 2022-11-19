@@ -1,6 +1,5 @@
 from numpy import pi as PI
 import arcade as arc
-from arcade.color import WHITE
 
 from circle import Circle
 
@@ -14,7 +13,9 @@ class Plane(arc.Window):
         num_circs: int = 1,
         center=None,
     ):
-        super().__init__(width, height, "Fourier")
+        super().__init__(width, height, "Fourier", center_window=True)
+        self.width = width
+        self.height = height
         # self.set_update_rate(1 / 30)
 
         self.center = center if center != None else {"x": width / 2, "y": height / 2}
@@ -35,10 +36,10 @@ class Plane(arc.Window):
 
         if key == arc.key.RIGHT:
             self.num_circs += 1
+            self.create_circles(self.num_circs)
         elif key == arc.key.LEFT and self.num_circs > 0:
             self.num_circs -= 1
-
-        self.create_circles(self.num_circs)
+            self.create_circles(self.num_circs)
 
     def on_update(self, delta_time=10**3):
         super().on_update(delta_time)
@@ -48,11 +49,11 @@ class Plane(arc.Window):
     def on_draw(self):
         self.clear()
 
-        x = 900
-        y = 500
+        x = self.width / 2
+        y = self.height / 2
 
         arc.start_render()
         for i, circle in enumerate(self.circles):
             angle = 2 * i + 1
             is_last = i + 1 == len(self.circles)
-            x, y = circle.draw({"x": x, "y": y}, is_last, angle)
+            x, y = circle.draw({"x": x, "y": y}, is_last, angle, x * 2, y * 2)
