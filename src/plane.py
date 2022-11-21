@@ -35,10 +35,11 @@ class Plane(arc.Window):
 
         if key == arc.key.RIGHT:
             self.num_circs += 1
+            self.create_circles(self.num_circs)
         elif key == arc.key.LEFT and self.num_circs > 0:
             self.num_circs -= 1
+            self.create_circles(self.num_circs)
 
-        self.create_circles(self.num_circs)
 
     def on_update(self, delta_time=10**3):
         super().on_update(delta_time)
