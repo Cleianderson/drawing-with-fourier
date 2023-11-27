@@ -1,4 +1,7 @@
 from numpy import arctan2, sqrt, e, pi
+from svg_parser import points_from_doc
+from xml.dom import minidom
+
 
 from plane import Plane
 from path import *
@@ -20,7 +23,16 @@ TRANS_Y = -200
 
 def __main__():
     Y = []
-    path = person
+    file_str = input('path to svg file: ')
+    file_str = file_str.replace('\'', '').strip()
+    print(file_str)
+
+    _file = open(file_str)
+
+    path_str = _file.read()
+
+    doc = minidom.parseString(path_str)
+    path = points_from_doc(doc, density=0.5, scale=5, offset=(25, 0))
 
     for coord in path[::STEP]:
         Y.append((coord[0] / SCALE + TRANS_X) + (coord[1] / SCALE + TRANS_Y) * 1j)
@@ -29,6 +41,8 @@ def __main__():
 
     plane = Plane(WIDTH, HEIGHT, fourier_Y, len(fourier_Y))
     plane.run()
+
+    doc.unlink()
 
 
 def discrete_fourier_transform(arr_x):
