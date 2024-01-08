@@ -42,9 +42,9 @@ class Circle:
                 _x = point.get("x")
                 _y = point.get("y")
 
-                arc.draw_point(_x, _y, color, point_size)
-                # trace.append((_x, _y))
+                # arc.draw_point(_x, _y, color, point_size)
+                trace.append((_x, _y))
 
-            # arc.draw_line_strip(trace, color)
+            arc.draw_line_strip(trace, color)
 
         return x, y

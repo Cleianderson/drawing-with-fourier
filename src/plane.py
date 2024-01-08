@@ -1,36 +1,40 @@
-from numpy import pi
+from xml.dom import minidom
+
 import arcade as arc
+from numpy import arctan2, e, pi, sqrt
 
 from circle import Circle
+from svg_parser import points_from_doc
 
 
 class Plane(arc.Window):
     def __init__(
         self,
+        file_str: str,
         width: int = 600,
         height: int = 600,
-        fourier_Y=[],
-        max_len=300,
         bg=(200, 200, 200),
     ):
-        super().__init__(width, height, "Fourier", center_window=True)
+        super().__init__(
+            width, height, "Fourier", center_window=True, update_rate=1 / 24
+        )
         arc.set_background_color(bg)
 
         self.width = width
         self.height = height
-        self.max_len = max_len
+
+        self.step = 1
+        self.scale = 1.5
+        self.trans_x = -200
+        self.trans_y = -200
+
+        points = self.parse_file(file_str)
+        self.max_len = len(points)
 
         self.t = 0
 
-        _circles = []
-        self.len_fourier = len(fourier_Y)
-        for y in fourier_Y:
-            amp = y.get("amp")
-            freq = y.get("freq")
-            phase = y.get("phase")
-
-            _circles.append(Circle(amp, freq, phase))
-        self.circles = _circles
+        self.len_fourier = len(points)
+        self.create_circles(points)
 
     def on_draw(self):
         self.clear()
@@ -45,3 +49,64 @@ class Plane(arc.Window):
         arc.finish_render()
 
         self.t += 2 * pi / self.len_fourier
+
+    def create_circles(self, points):
+        _circles = []
+
+        for y in points:
+            amp = y.get("amp")
+            freq = y.get("freq")
+            phase = y.get("phase")
+
+            _circles.append(Circle(amp, freq, phase))
+        self.circles = _circles
+
+    def discrete_fourier_transform(self, arr_x):
+        X = []
+        # N = len(arr_x)
+        L = len(arr_x) // 2
+
+        for k in range(2 * L):
+            S = 0
+            for n in range(2 * L):
+                S += arr_x[n] * e ** (-1j * pi * k * n / L)
+
+            re, im = S.real / (2 * L), S.imag / (2 * L)
+            S = re + im * 1j
+            X.append(
+                {
+                    "re": re,
+                    "im": im,
+                    "phase": arctan2(re, im),
+                    "amp": sqrt(re**2 + im**2),
+                    "freq": k,
+                }
+            )
+
+        return X
+
+    def parse_file(self, file_str: str):
+        _file = open(file_str)
+
+        file_content = _file.read()
+
+        doc = minidom.parseString(file_content)
+        path = points_from_doc(doc, density=0.5, scale=5, offset=(25, 0))
+
+        points = []
+        for coord in path[:: self.step]:
+            x = coord[0] / self.scale + self.trans_x
+            y = coord[1] / self.scale + self.trans_y
+
+            points.append(x + y * 1j)
+
+        doc.unlink()
+
+        dft_points = self.discrete_fourier_transform(points)
+
+        def sort_fn(point):
+            return point["amp"]
+        
+        dft_points.sort(reverse=True, key=sort_fn)
+
+        return dft_points
