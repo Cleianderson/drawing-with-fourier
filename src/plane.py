@@ -48,7 +48,7 @@ class Plane(arc.Window):
             x, y = circle.draw({"x": x, "y": y}, is_last, self.t, self.max_len)
         arc.finish_render()
 
-        self.t += 2 * pi / self.len_fourier
+        self.t += 1
 
     def create_circles(self, points):
         _circles = []
@@ -63,23 +63,22 @@ class Plane(arc.Window):
 
     def discrete_fourier_transform(self, arr_x):
         X = []
-        # N = len(arr_x)
-        L = len(arr_x) // 2
+        N = len(arr_x)
+        # N = 2L => L = N / 2
 
-        for k in range(2 * L):
+        for k in range(0, N):
             S = 0
-            for n in range(2 * L):
-                S += arr_x[n] * e ** (-1j * pi * k * n / L)
-
-            re, im = S.real / (2 * L), S.imag / (2 * L)
-            S = re + im * 1j
+            for n in range(0, N):
+                S += arr_x[n] * e ** (-2j * pi * k * n / N)
+            S = S / (N)
+            re, im = S.real, S.imag
             X.append(
                 {
                     "re": re,
                     "im": im,
                     "phase": arctan2(re, im),
                     "amp": sqrt(re**2 + im**2),
-                    "freq": k,
+                    "freq": 2 * k * pi / N,
                 }
             )
 
@@ -98,7 +97,7 @@ class Plane(arc.Window):
             x = coord[0] / self.scale + self.trans_x
             y = coord[1] / self.scale + self.trans_y
 
-            points.append(x + y * 1j)
+            points.extend([x + y * 1j])
 
         doc.unlink()
 
