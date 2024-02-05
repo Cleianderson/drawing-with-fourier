@@ -90,7 +90,7 @@ class Plane(arc.Window):
         file_content = _file.read()
 
         doc = minidom.parseString(file_content)
-        path = points_from_doc(doc, density=0.5, scale=5, offset=(25, 0))
+        path = points_from_doc(doc, density=0.5, scale=10, offset=(-25, -25))
 
         points = []
         for coord in path[:: self.step]:
