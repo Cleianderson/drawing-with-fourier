@@ -16,12 +16,12 @@ class Plane(arc.Window):
         bg=(200, 200, 200),
     ):
         super().__init__(
-            width, height, "Fourier", center_window=True, update_rate=1 / 24
+            width, height, "Fourier", center_window=True, update_rate=1 / 24, fullscreen=True
         )
-        arc.set_background_color(bg)
+        arc.set_background_color(arc.color.WHITE)
 
-        self.width = width
-        self.height = height
+        # self.width = width
+        # self.height = height
 
         self.step = 1
         self.scale = 1.5
@@ -90,7 +90,7 @@ class Plane(arc.Window):
         file_content = _file.read()
 
         doc = minidom.parseString(file_content)
-        path = points_from_doc(doc, density=0.5, scale=10, offset=(-25, -25))
+        path = points_from_doc(doc, density=1, scale=10, offset=(-25, -25))
 
         points = []
         for coord in path[:: self.step]:
