@@ -1,6 +1,8 @@
 import sys
 from xml.dom import minidom
 
+import matplotlib.pyplot as plt
+
 import arcade as arc
 import numpy as np
 from arcade.csscolor import DARK_RED, ROYAL_BLUE, WHITE
@@ -8,15 +10,23 @@ from numpy import arctan2, cos, e, pi, sin, sqrt
 
 from svg_parser import points_from_doc
 
-SCALE = 100 * (4/pi)
-TRANS_X = 4
+SCALE = 300
+TRANS_X = 450
 TRANS_Y = 0
 MAX_LEN = 400
+K = 10
 
 def __main__():
-    X = [(0, (1 / (2*k - 1)) * SCALE, 2*k - 1) for k in range(1, 2)]
+    def f(x):
+      q = x // pi
+      if q % 2 == 0:
+        return 1
+      return -1
+    f = np.vectorize(f)
+    
+    U = fourier_coefs(f, K, 10**3, pi)
 
-    complex_plane = ComplexPlane(X)
+    complex_plane = ComplexPlane(U)
     complex_plane.run()
 
 
@@ -62,7 +72,7 @@ class ComplexPlane(arc.Window):
             arc.draw_line(x1, y1, x0, y0, arc.color.DARK_GRAY, 3)
 
             if coef is cN_1:
-                _t = SCALE * (self.t + TRANS_X)
+                _t = (SCALE / 3) * self.t + TRANS_X
                 self.Y.extend([y1])
                 # self.track.extend([(SCALE * (self.t + TRANS_X), y1)])
 
@@ -82,7 +92,7 @@ class ComplexPlane(arc.Window):
             x0, y0 = x1, y1
 
         arc.finish_render()
-        self.t += 1.5e-2
+        self.t += 3e-2
 
 
 def parse_file(file_str: str):
@@ -104,21 +114,23 @@ def parse_file(file_str: str):
     return points
 
 
-def fourier_coefs(X):
+def fourier_coefs(f, N, M, L):
     COEFS = []
-    N = len(X)
-    for k in range(N):
+    DX = 2 * L / M
+    for k in range(1, N + 1):
         S = 0
-        for n in range(N):
-            S += X[n] * e ** (-2j * k * pi * n / N)
-        S = S / N
+        x = -L
+        for _ in range(M):
+            S += f(x) * e ** (-1j * k * pi * x / L) * DX
+            x += DX
+        S = S / (2*L)
 
         re, im = S.real, S.imag
-        angle = arctan2(-im, re)
+        angle = arctan2(re, im)
         amplitude = sqrt(re**2 + im**2)
-        frequence = 2 * k * pi / N
+        frequence = k * pi / L
 
-        COEFS.extend([(angle, amplitude, frequence)])
+        COEFS.extend([(angle, SCALE * amplitude, frequence)])
     return COEFS
 
 
