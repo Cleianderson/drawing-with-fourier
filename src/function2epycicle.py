@@ -1,8 +1,6 @@
 import sys
 from xml.dom import minidom
 
-import matplotlib.pyplot as plt
-
 import arcade as arc
 import numpy as np
 from arcade.csscolor import DARK_RED, ROYAL_BLUE, WHITE
@@ -10,28 +8,27 @@ from numpy import arctan2, cos, e, pi, sin, sqrt
 
 from svg_parser import points_from_doc
 
-SCALE = 300
+SCALE = 50
 TRANS_X = 450
 TRANS_Y = 0
 MAX_LEN = 400
-K = 10
+K = 250
 
 def __main__():
     def f(x):
-      q = x // pi
-      if q % 2 == 0:
-        return 1
-      return -1
+        return 4 / pi**2 * (x - pi / 2) ** 2
+    #   q = x // pi
+    #   if q % 2 == 0:
+    #     return 1
+    #   return -1
     f = np.vectorize(f)
     
-    U = fourier_coefs(f, K, 10**3, pi)
-
-    complex_plane = ComplexPlane(U)
+    complex_plane = ComplexPlane(f, K, 10**3, pi)
     complex_plane.run()
 
 
 class ComplexPlane(arc.Window):
-    def __init__(self, x):
+    def __init__(self, f, K, M, pi):
         super().__init__(700, 550, fullscreen=True, enable_polling=False)
         arc.set_background_color(WHITE)
 
@@ -40,13 +37,17 @@ class ComplexPlane(arc.Window):
 
         # complex_points = SCALE * (x + 1j * y)
         # self.f_coefs = fourier_coefs(complex_points)
-        self.f_coefs = x
+        self.f_coefs = fourier_coefs(f, K, M, pi)
+        print(self.f_coefs)
+
         self.track = []
         self.t = 0
         self.Y = []
         self.X = []
         self.file = 'C5F0_'
-        # self.f = function
+        self.f = f
+        self.K = K
+        self.M = M
 
     def on_key_press(self, key, modifiers):
         if key == arc.key.SPACE:
@@ -54,6 +55,14 @@ class ComplexPlane(arc.Window):
             image.save(f"{self.file}{self.t}.pdf")
         if key == arc.key.UP:
             self.t += 1
+        if key == arc.key.P:
+            self.K += 1
+            self.f_coefs = fourier_coefs(self.f, self.K, self.M, pi)
+        if key == arc.key.M:
+            self.K -= 1
+            self.f_coefs = fourier_coefs(self.f, self.K, self.M, pi)
+
+        
 
     def on_draw(self):
         x0, y0 = self.width / 2 - 400, self.height / 2
@@ -92,6 +101,7 @@ class ComplexPlane(arc.Window):
             x1 = amplitude * cos(wn) + x0
             y1 = amplitude * sin(wn) + y0
 
+            
             arc.draw_circle_outline(x0, y0, amplitude, arc.color.LIGHT_GRAY)
             arc.draw_line(x1, y1, x0, y0, arc.color.DARK_GRAY, 3)
 
@@ -147,13 +157,14 @@ def parse_file(file_str: str):
 def fourier_coefs(f, N, M, L):
     COEFS = []
     DX = 2 * L / M
-    for k in range(1, N + 1):
+    for k in range(-N // 2, N // 2 + 1):
+    # for k in range(N):
         S = 0
         x = -L
         for _ in range(M):
             S += f(x) * e ** (-1j * k * pi * x / L) * DX
             x += DX
-        S = S / (2*L)
+        S = S / (4*L)
 
         re, im = S.real, S.imag
         angle = arctan2(re, im)
@@ -161,6 +172,10 @@ def fourier_coefs(f, N, M, L):
         frequence = k * pi / L
 
         COEFS.extend([(angle, SCALE * amplitude, frequence)])
+
+        sort_coefs = lambda coef: -coef[1]
+        COEFS.sort(key=sort_coefs)
+
     return COEFS
 
 
