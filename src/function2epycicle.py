@@ -32,7 +32,7 @@ def __main__():
 
 class ComplexPlane(arc.Window):
     def __init__(self, x):
-        super().__init__(700, 550, fullscreen=True)
+        super().__init__(700, 550, fullscreen=True, enable_polling=False)
         arc.set_background_color(WHITE)
 
         # x = np.array(x) + TRANS_X
@@ -45,7 +45,7 @@ class ComplexPlane(arc.Window):
         self.t = 0
         self.Y = []
         self.X = []
-        # self.n = n
+        self.file = 'C5F0_'
         # self.f = function
 
     def on_key_press(self, key, modifiers):
@@ -60,6 +60,31 @@ class ComplexPlane(arc.Window):
         cN_1 = self.f_coefs[-1]
         arc.start_render()
         arc.draw_text(f'n = {self.t}', 0.05 * x0, 1.9 * y0, arc.color.BLACK, 12)
+
+        arc.draw_polygon_outline([
+            (self.width / 2, 100),
+            (self.width / 2, self.height - 100),
+        ], arc.color.BLACK)
+        arc.draw_polygon_filled([
+            (self.width / 2 - 5, self.height - 100 - 5),
+            (self.width / 2, self.height - 100),
+            (self.width / 2 + 5, self.height - 100 - 5),
+            (self.width / 2, self.height - 100 + 15),
+            (self.width / 2 - 5, self.height - 100 - 5),
+        ], arc.color.BLACK)
+
+        arc.draw_polygon_outline([
+            (self.width / 2 - 20, self.height / 2),
+            (self.width - 100, self.height / 2),
+        ], arc.color.BLACK)
+        arc.draw_polygon_filled([
+            (self.width - 100 - 5, self.height / 2 + 5),
+            (self.width - 100, self.height / 2 ),
+            (self.width - 100 - 5, self.height / 2 - 5),
+            (self.width - 100 + 15, self.height / 2),
+            (self.width - 100 - 5, self.height / 2 + 5),
+        ], arc.color.BLACK)
+
         for coef in self.f_coefs:
             angle, amplitude, frequence = coef
 
@@ -68,17 +93,19 @@ class ComplexPlane(arc.Window):
             y1 = amplitude * sin(wn) + y0
 
             arc.draw_circle_outline(x0, y0, amplitude, arc.color.LIGHT_GRAY)
-            arc.draw_point(x1, y1, arc.color.DARK_GRAY, 6)
             arc.draw_line(x1, y1, x0, y0, arc.color.DARK_GRAY, 3)
 
+
             if coef is cN_1:
-                _t = (SCALE / 3) * self.t + TRANS_X
+                arc.draw_point(x1, y1, arc.color.RED, 6)
+                _t = (SCALE / 4) * self.t + self.width / 2
                 self.Y.extend([y1])
                 # self.track.extend([(SCALE * (self.t + TRANS_X), y1)])
 
-                if len(self.track) > MAX_LEN:
-                    # self.track.pop(0)
+                # print(len(self.track))
+                if 2 * (len(self.track) + 80) > self.width / 2:
                     # self.X.pop(0)
+                    # self.track.pop(0)
                     self.Y.pop(0)
                 else:
                     self.X.extend([_t])
@@ -87,6 +114,9 @@ class ComplexPlane(arc.Window):
 
                 arc.draw_line_strip(self.track, arc.color.BLACK, 5)
                 arc.draw_line(x1, y1, self.X[0], y1, [120, 120, 120], line_width=2)
+                arc.draw_line(self.width / 2, self.height / 2, self.width / 2, y1, arc.color.RED, line_width=4)
+            else:
+              arc.draw_point(x1, y1, arc.color.DARK_GRAY, 6)
 
             
             x0, y0 = x1, y1
