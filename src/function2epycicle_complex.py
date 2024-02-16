@@ -8,11 +8,11 @@ from numpy import arctan2, cos, e, pi, sin, sqrt
 
 from svg_parser import points_from_doc
 
-SCALE = 200
+SCALE = 100
 TRANS_X = 0
 TRANS_Y = 0
 MAX_LEN = 400
-K = 2 * 2
+K = 2 * 3
 
 def __main__():
     def f(x):
@@ -90,7 +90,7 @@ class ComplexPlane(arc.Window):
             (self.width - 100 - 5, self.height / 2 + 5),
         ], arc.color.BLACK)
 
-        for coef in self.f_coefs:
+        for i, coef in enumerate(self.f_coefs):
             angle, amplitude, frequence = coef
 
             wn = frequence * self.t + angle
@@ -99,17 +99,18 @@ class ComplexPlane(arc.Window):
 
             
             arc.draw_circle_outline(x0, y0, amplitude, arc.color.LIGHT_GRAY)
-            arc.draw_line(x1, y1, x0, y0, arc.color.DARK_GRAY, 3)
+            arc.draw_line(x1, y1, x0, y0, arc.color.BLACK if i % 2 == 0 else arc.color.DARK_BLUE, 3)
 
 
             if coef is cN_1:
                 arc.draw_point(x1, y1, arc.color.RED, 6)
-                _t = (SCALE / 4) * self.t + self.width / 2
+                arc.draw_line(self.width / 2 - 400, self.height / 2, self.width / 2 - 400, y1, arc.color.RED, 3)
+                _t = (SCALE / 2) * self.t + self.width / 2
                 self.Y.extend([y1])
                 # self.track.extend([(SCALE * (self.t + TRANS_X), y1)])
 
-                # print(len(self.track))
-                if 2 * (len(self.track) + 80) > self.width / 2:
+                # print(len(self.track)) 
+                if _t - self.width / 2 > self.width / 2 - 80:
                     # self.X.pop(0)
                     # self.track.pop(0)
                     self.Y.pop(0)
@@ -152,7 +153,7 @@ def parse_file(file_str: str):
 def fourier_coefs(f, N, M, L):
     COEFS = []
     DX = 2 * L / M
-    for k in range(N + 1):
+    for k in range(-N // 2, N // 2 + 1):
         S = 0
         x = -L
         for _ in range(M):
