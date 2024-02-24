@@ -7,8 +7,8 @@ WIDTH = 700
 HEIGHT = 700
 
 def __main__():
-    # file_str = request_file()
-    file_str = "/home/oem/Downloads/python-logo-only.svg"
+    file_str = request_file()
+    # file_str = "/home/oem/Downloads/python-logo-only.svg"
 
     plane = Plane(file_str, WIDTH, HEIGHT)
 
